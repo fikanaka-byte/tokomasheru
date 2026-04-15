@@ -79,7 +79,6 @@ function App() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [transactions, setTransactions] = useState([]);
-  const [refNumber, setRefNumber] = useState(''); // WAJIB ADA INI BRO!
   const [balances, setBalances] = useState({ kembalian: 0, pulsa: 0, bank: 0 });
   const [storeConfig, setStoreConfig] = useState({ name: 'Toko Mas Heru', address: '', phone: '', footer: ''});
 
@@ -138,7 +137,7 @@ function App() {
                 else if (['Pulsa', 'Paket Data'].includes(i.category)) nb.pulsa -= sub;
                 else if (i.category === 'Transfer') nb.bank -= sub;
               });
-              syncToSheets('UPDATE_BALANCES', nb);
+              syncToGoogleSheets('UPDATE_BALANCES', nb);
               return nb;
             });
           }}
@@ -249,6 +248,7 @@ function App() {
     // 2. KASIR DASHBOARD (POS)
     // ==========================================
     function KasirDashboard({ products, categories, storeConfig, cashierId, transactions, onLogout, onTransactionSuccess }) {
+      const [refNumber, setRefNumber] = useState(''); // WAJIB ADA INI BRO!
       const [cart, setCart] = useState([]);
       const [showPayment, setShowPayment] = useState(false);
       const [paymentMethod, setPaymentMethod] = useState('Cash');
