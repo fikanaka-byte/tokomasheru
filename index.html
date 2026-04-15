@@ -25,22 +25,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-  <style>
-    @media print {
-      body * { visibility: hidden; }
-      #print-invoice, #print-invoice * { visibility: visible; }
-      #print-invoice { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: white; }
-      .no-print { display: none !important; }
-    }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    /* Penyesuaian ikon agar center vertikal */
-    .material-symbols-outlined {
-      vertical-align: middle;
-      font-size: inherit;
-    }
-  </style>
+    <style>
+        @media print {
+          @page { size: 58mm auto; margin: 0; }
+          body { margin: 0; padding: 0; }
+          #root, .no-print { display: none !important; }
+          #print-invoice { display: block !important; width: 58mm; padding: 4mm; font-family: 'Courier New', monospace; font-size: 9pt; background: white; }
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .material-symbols-outlined { vertical-align: middle; font-size: inherit; }
+      </style>
   
       <meta name="mobile-web-app-capable" content="yes">
       <meta name="apple-mobile-web-app-capable" content="yes">
@@ -63,26 +57,13 @@
     // --- CONFIGURATION ---
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz-Um422Lqpxfi1OzEz6v9ahpu_T12lfT5jKqG6miqJ3FFAqfpOwUzfrTFaVYAPypvi/exec";
 
-    // --- DUMMY INITIAL DATA ---
-    const initialCategories = [
-      { id: 1, name: 'Pulsa' },
-      { id: 2, name: 'Paket Data' },
-      { id: 3, name: 'Transfer' },
-      { id: 4, name: 'Jual Beli' },
-      { id: 5, name: 'Service' }
-    ];
-    const initialProducts = [
-      { id: 'P001', name: 'Samsung S25', price: 25000, category: 'Jual Beli', stock: 50 },
-      { id: 'P002', name: '20.000', price: 5000, category: 'Pulsa', stock: 100 },
-      { id: 'P003', name: 'Paket Indosat 1Gb', price: 18000, category: 'Paket Data', stock: 40 },
-      { id: 'P004', name: 'Trasfer Bank', price: 1015000, category: 'Transfer', stock: 30 },
-      { id: 'P005', name: 'Ganti LCD Iphone', price: 20000, category: 'Service', stock: 25 },
-    ];
-
     const formatRp = (number) => {
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
     };
 
+    // --- KOMPONEN IKON ---
+    const Icon = ({ name, className = "" }) => <span className={`material-symbols-outlined ${className}`}>{name}</span>;
+    
     const showAlert = (options) => {
       if (window.Swal) {
         window.Swal.fire({ fontFamily: 'sans-serif', ...options });
@@ -90,11 +71,6 @@
         alert(options.title + (options.text ? `\n${options.text}` : ''));
       }
     };
-
-    // --- KOMPONEN IKON ---
-    const Icon = ({ name, className = "" }) => (
-      <span className={`material-symbols-outlined ${className}`}>{name}</span>
-    );
 
     function App() {
       const [userRole, setUserRole] = useState(null);
@@ -110,12 +86,7 @@
         pulsa: 0,
         bank: 0
       });
-      const [storeConfig, setStoreConfig] = useState({
-        name: 'Toko Mas Heru',
-        address: 'Loading...',
-        phone: 'Loading...',
-        footer: 'Loading...'
-      });
+      const [storeConfig, setStoreConfig] = useState({ name: 'Toko Mas Heru', address: ", phone: ", footer: "});
 
       // 1. FUNGSI SINKRONISASI (Ditaruh di atas agar bisa dipanggil)
       const syncToGoogleSheets = async (action, data) => {
@@ -203,20 +174,13 @@
                 syncToGoogleSheets('ADD_TRANSACTION', finalTrx);
               
                 setBalances(prev => {
-                  const newBalances = { ...prev };
-
-                  // Jika Cash, uang masuk ke Laci (Kembalian)
-                  if (trx.method === 'Cash') {
-                    newBalances.kembalian += trx.total;
-                  } 
-                  
-                  // Logika pemotongan saldo modal (Pulsa/Transfer) tetap jalan:
-                  trx.items.forEach(item => {
-                    if (item.category === 'Pulsa' || item.category === 'Paket Data') {
-                      newBalances.pulsa -= (item.price * item.qty);
-                    } else if (item.category === 'Transfer') {
-                      newBalances.bank -= (item.price * item.qty);
-                    }
+                  let nb = { ...prev };
+                  if (finalTrx.method === 'Cash') nb.kembalian += finalTrx.total;
+                  else if (finalTrx.method === 'EDC BRILink') nb.bank += finalTrx.total;
+                  finalTrx.items.forEach(i => {
+                    if (i.category === 'Tarik Tunai') nb.kembalian -= (i.price * i.qty);
+                    else if (['Pulsa', 'Paket Data'].includes(i.category)) nb.pulsa -= (i.price * i.qty);
+                    else if (i.category === 'Transfer') nb.bank -= (i.price * i.qty);
                   });
 
                   syncToGoogleSheets('UPDATE_BALANCES', newBalances);
@@ -336,12 +300,12 @@
     // 2. KASIR DASHBOARD (POS)
     // ==========================================
     function KasirDashboard({ products, categories, storeConfig, cashierId, transactions, onLogout, onTransactionSuccess }) {
-      const [paymentMethod, setPaymentMethod] = useState('Cash');
       const [cart, setCart] = useState([]);
-      const [searchQuery, setSearchQuery] = useState('');
-      const [activeCategory, setActiveCategory] = useState('Semua');
-      const [paymentAmount, setPaymentAmount] = useState('');
       const [showPayment, setShowPayment] = useState(false);
+      const [paymentMethod, setPaymentMethod] = useState('Cash');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [paymentAmount, setPaymentAmount] = useState('');
+      const [activeCategory, setActiveCategory] = useState('Semua');
       const [lastInvoice, setLastInvoice] = useState(null);
       const [showHistory, setShowHistory] = useState(false);
       const [isMobileCartOpen, setIsMobileCartOpen] = useState(false); // State baru untuk panel keranjang di HP
@@ -602,8 +566,8 @@
                   </div>
                   <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Metode Pembayaran</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['Cash', 'E-Wallet', 'Transfer'].map(m => (
+                    <div className="grid grid-cols-2 gap-2 mb-4">
+                      {['Cash', 'E-Wallet', 'Transfer','EDC BRILink'].map(m => (
                         <button
                           key={m}
                           onClick={() => setPaymentMethod(m)}
@@ -615,7 +579,11 @@
                         </button>
                       ))}
                     </div>
+                    {/* EDC BRILink */}
+                    {paymentMethod==='EDC BRILink' && <input type="text" placeholder="No. Referensi EDC" value={refNumber} onChange={e=>setRefNumber(e.target.value)} className="w-full p-3 border rounded-xl mb-4" />}
+                    <input type="text" placeholder="Nominal Bayar" value={paymentAmount} onChange={e=>setPaymentAmount(e.target.value.replace(/\D/g,''))} className="w-full p-3 border rounded-xl mb-6 text-2xl font-bold text-center" />
                   </div>
+                  {/* Nominal Pembayaran */}
                   <div className="grid grid-cols-3 gap-2 mb-8">
                     {[50000, 100000, totalBelanja].map((amount, idx) => (
                       <button key={idx} onClick={() => setPaymentAmount(new Intl.NumberFormat('id-ID').format(amount))} className="py-2 px-2 bg-indigo-50 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-sm">
@@ -659,7 +627,7 @@
                 <div className="flex justify-between"><span>Kembali:</span><span>{formatRp(lastInvoice.change)}</span></div>
               </div>
               <div className="text-center mt-6 border-t border-dashed border-gray-400 pt-4 text-xs">
-                <p>{storeConfig.footer}</p><p className="mt-2 text-gray-500">~ Terimakasih ~</p>
+                <p>{storeConfig.footer}</p><p className="mt-2 text-gray-500">~ Barang yang sudah dibeli tidak bisa dikembalikan lagi kecuali ada perjanjian khusus ~</p>
               </div>
             </div>
           )}
