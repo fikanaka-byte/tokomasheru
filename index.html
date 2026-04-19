@@ -329,7 +329,7 @@
       const quickActions = [
         { id: 'qa1', name: 'Transfer Bank', icon: 'account_balance', color: 'bg-blue-500', options: ['BNI', 'BRI', 'ANTAR BANK', 'KARTU ATM'] },
         { id: 'QA2', name: 'Tarik Tunai', icon: 'payments', color: 'bg-emerald-500'},
-        { id: 'qa2', name: 'Top Up E-Wallet', icon: 'account_balance_wallet', color: 'bg-purple-500', options: ['GOPAY', 'DANA', 'OVO', 'SHOPEEPAY', 'LINK AJA'] },
+        { id: 'qa2', name: 'Top Up E-Wallet', icon: 'account_balance_wallet', color: 'bg-purple-500', options: ['GOPAY', 'DANA', 'OVO', 'SHOPEEPAY', 'LINKAJA'] },
         { id: 'qa3', name: 'Bayar Tagihan', icon: 'receipt_long', color: 'bg-orange-500', options: ['ADIRA', 'BPJS', 'ACC FINANCE', 'PNM', 'BFI', 'HOME CREDIT', 'LAINNYA'] }
       ];
 
@@ -338,11 +338,11 @@
         if (action.name === 'Transfer Bank') {
           options = { 'BNI': 'BNI', 'BRI': 'BRI', 'ANTAR BANK': 'ANTAR BANK', 'KARTU ATM': 'KARTU ATM' };
         } else if (action.name === 'Top Up E-Wallet') {
-          options = { 'GOPAY': 'GOPAY', 'DANA': 'DANA', 'OVO': 'OVO', 'SHOPEEPAY': 'SHOPEEPAY', 'LINK AJA': 'LINK AJA' };
+          options = { 'GOPAY': 'GOPAY', 'DANA': 'DANA', 'OVO': 'OVO', 'SHOPEEPAY': 'SHOPEEPAY', 'LINKAJA': 'LINKAJA' };
         } else if (action.name === 'Bayar Tagihan') {
           options = { 'ADIRA': 'ADIRA', 'BPJS': 'BPJS', 'PNM': 'PNM', 'HOME CREDIT': 'HOME CREDIT', 'LAINNYA': 'LAINNYA' };
         } else if (action.name === 'Tarik Tunai') {
-          options = { 'BNI': 'BNI', 'BRI': 'BRI' };
+          options = { 'BNI': 'BNI', 'BRI': 'BRI', 'KARTU ATM': 'KARTU ATM' };
         }
 
         window.Swal.fire({
