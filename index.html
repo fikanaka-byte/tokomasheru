@@ -27,17 +27,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
       <style>
-        /* Gunakan dvh (Dynamic Viewport Height) biar pas sama bar browser HP */
-        .h-screen {
-          height: 100vh; /* Fallback */
-          height: 100dvh; 
-        }
-      
-        /* Memastikan area scroll produk bener-bener bisa ditarik sampai bawah */
-        .main-scroll-area {
-          scroll-behavior: smooth;
-          -webkit-overflow-scrolling: touch;
-        }
         /* Animasi Fade In untuk Modal/Keranjang */
         .animate-slide-up {
           animation: slideUp 0.3s ease-out;
@@ -693,31 +682,31 @@
               ))}
             </div>
 
-            {/* SEKSI AKSI CEPAT */}
-            <div className="px-4 md:px-6 mb-6">
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 backdrop-blur-md rounded-[2rem] p-6 shadow-md">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {quickActions.map((action) => (
-                    <button
-                      key={action.id}
-                      onClick={() => handleQuickAction({ ...action, price: 0, category: action.name.split(' ')[1] || 'Layanan' })}
-                      className="group flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 indigo-500 hover:border-amber-500 hover:bg-grey-500/50 hover:shadow-xl transition-all active:scale-95"
-                    >
-                      <div className={`${action.color} text-white p-3 rounded-2xl mb-2 shadow-lg shadow-gray-200 group-hover:scale-110 transition-transform`}>
-                        <Icon name={action.icon} className="text-2xl" />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight text-center">{action.name}</span>
-                    </button>
-                  ))}
+            {/* Tambahkan padding bottom ekstra (pb-24) di HP agar tidak tertutup tombol melayang */}
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-24 md:pb-6">
+
+              {/* SEKSI AKSI CEPAT */}
+              <div className="px-0 mb-6">
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 backdrop-blur-md rounded-[2rem] p-6 shadow-md">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {quickActions.map((action) => (
+                      <button
+                        key={action.id}
+                        onClick={() => handleQuickAction({ ...action, price: 0, category: action.name.split(' ')[1] || 'Layanan' })}
+                        className="group flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 indigo-500 hover:border-amber-500 hover:bg-grey-500/50 hover:shadow-xl transition-all active:scale-95"
+                      >
+                        <div className={`${action.color} text-white p-3 rounded-2xl mb-2 shadow-lg shadow-gray-200 group-hover:scale-110 transition-transform`}>
+                          <Icon name={action.icon} className="text-2xl" />
+                        </div>
+                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight text-center">{action.name}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Tambahkan padding bottom ekstra (pb-xx) di HP agar tidak tertutup tombol melayang */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-32 md:pb-6">
+              
               {/* DAFTAR PRODUK - Ukuran diperkecil */}
-                {/*<div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-32">*/}
-                {<div className="flex-1 overflow-y-auto px-4 pt-2 pb-32 md:pb-10">}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-24">
                     {filteredProducts.map(product => (
                         <div 
                             key={product.id} 
