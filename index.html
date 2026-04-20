@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Toko Mas Heru</title>
   
   <!-- Tailwind CSS -->
@@ -28,10 +28,15 @@
 
       <style>
         body {
-          padding-top: env(safe-area-inset-top);
-          background-color: #4f46e5; /* Ini warna Indigo biar nyambung sama header */
           margin: 0;
+          padding: 0;
+          /* Gunakan padding-top agar teks gak ketutup jam, 
+             tapi pastikan background-color-nya sama dengan warna header lo */
+          padding-top: env(safe-area-inset-top);
+          background-color: #4f46e5; /* GANTI sesuai warna header Toko Heru lo */
+          min-height: 100vh;
         }
+        
         /* Animasi Fade In untuk Modal/Keranjang */
         .animate-slide-up {
           animation: slideUp 0.3s ease-out;
