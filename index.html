@@ -27,22 +27,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
       <style>
-        /* Biar konten tidak ketutup tombol 'Lihat Pesanan' di bawah */
-        .main-content {
-          height: calc(100vh - 80px); /* Sesuaikan tinggi header */
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
+        /* Animasi Fade In untuk Modal/Keranjang */
+        .animate-slide-up {
+          animation: slideUp 0.3s ease-out;
         }
-        
-        /* Hilangkan gap putih di atas pada iPhone (safe area) */
-        body {
-          padding-top: env(safe-area-inset-top);
-          padding-bottom: env(safe-area-inset-bottom);
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
-
-        /* Buat scrollbar cantik */
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        /* Sembunyikan horizontal scrollbar */
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
         
         @media print {
           @page { size: 58mm auto; margin: 0; }
@@ -50,8 +46,8 @@
           #root, .no-print { display: none !important; }
           #print-invoice { display: block !important; width: 58mm; padding: 4mm; font-family: 'Courier New', monospace; font-size: 9pt; background: white; }
         }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .material-symbols-outlined { vertical-align: middle; font-size: inherit; }
+
+        /* .material-symbols-outlined { vertical-align: middle; font-size: inherit; } */
       </style>
   
       <meta name="mobile-web-app-capable" content="yes">
@@ -609,52 +605,37 @@
       return (
         <div className="flex h-screen overflow-hidden bg-gray-100 relative">
           <div className="flex-1 flex flex-col h-full overflow-hidden no-print">
-            {/* Header */}
-            <div className="bg-white px-6 py-4 shadow-sm flex items-center justify-between z-10">
-              <div>
-                <h2 className="text-xl font-bold text-gray-800">{storeConfig.name}</h2>
-                <p className="text-sm text-gray-500">Kasir: {cashierId}</p>
+            {/* Header Responsive */}
+            <header className="bg-white px-4 py-3 shadow-sm flex items-center justify-between z-10 sticky top-0">
+              <div className="flex flex-col shrink-0">
+                <h2 className="text-lg font-bold text-gray-800 leading-tight">Toko Mas Heru</h2>
+                <p className="text-[10px] text-gray-500">Kasir: {cashierId}</p>
               </div>
-              <div className="flex items-center gap-4">
-                <input type="text" placeholder="Cari menu..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-4 pr-4 py-2 border rounded-full bg-gray-50 w-64" />
               
-              {/* Menu Riwayat Transaksi Dropdown */}
-                <div className="relative">
-                  <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 px-3 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
-                    <Icon name="history" className="text-lg" /> <span className="hidden md:inline">Riwayat</span>
-                  </button>
-                  {showHistory && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                      <div className="p-3 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 flex justify-between items-center">
-                        <span>Riwayat Terakhir</span>
-                        <button onClick={() => setShowHistory(false)} className="text-gray-400 hover:text-gray-600"><Icon name="close" className="text-base" /></button>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto">
-                        {transactions.length === 0 ? (
-                           <div className="p-4 text-center text-gray-500 text-sm">Belum ada transaksi</div>
-                        ) : (
-                           transactions.slice(0, 10).map(trx => (
-                             <div key={trx.id} className="p-3 border-b border-gray-50 hover:bg-gray-50 text-sm">
-                               <div className="flex justify-between items-start mb-1">
-                                 <span className="font-bold text-gray-800">{trx.id}</span>
-                                 <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">{trx.cashierId || '-'}</span>
-                               </div>
-                               <div className="text-xs text-gray-500 mb-1">{new Date(trx.date).toLocaleString('id-ID')}</div>
-                               <div className="text-indigo-600 font-bold">{formatRp(trx.total)}</div>
-                             </div>
-                           ))
-                        )}
-                      </div>
-                    </div>
-                  )}
+              <div className="flex items-center gap-2 flex-1 justify-end ml-2">
+                {/* Angka 3: Search Area Diperkecil */}
+                <div className="relative flex-1 max-w-[120px] md:max-w-xs">
+                  <input 
+                    type="text" 
+                    placeholder="Cari..." 
+                    value={searchQuery} 
+                    onChange={(e) => setSearchQuery(e.target.value)} 
+                    className="w-full pl-8 pr-3 py-1.5 border rounded-full bg-gray-50 text-sm outline-none focus:border-indigo-400" 
+                  />
+                  <Icon name="search" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
                 </div>
 
-                <button onClick={onLogout} className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                  <Icon name="logout" className="text-lg" /> <span className="hidden md:inline">Keluar</span>
+                {/* Angka 2: Riwayat */}
+                <button onClick={() => setShowHistory(!showHistory)} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors">
+                  <Icon name="history" className="text-xl" />
                 </button>
 
+                {/* Angka 1: Logout */}
+                <button onClick={onLogout} className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors">
+                  <Icon name="logout" className="text-xl" />
+                </button>
               </div>
-            </div>
+            </header>
 
             {/* Banner Kasir */}
             <div className="px-4 md:px-6 pt-4 shrink-0 no-print">
@@ -677,22 +658,20 @@
               ))}
             </div>
 
-            {/* SEKSI AKSI CEPAT - Diperbaiki agar tidak numpuk */}
-            <div className="px-4 mb-6">
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 backdrop-blur-md rounded-3xl p-4 shadow-sm border border-white/20">
+            {/* SEKSI AKSI CEPAT */}
+            <div className="px-4 md:px-6 mb-6">
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 backdrop-blur-md rounded-[2rem] p-6 shadow-md">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {quickActions.map((action) => (
                     <button
                       key={action.id}
-                      onClick={() => handleQuickAction(action)}
-                      className="group flex flex-col items-center justify-center p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95 border border-slate-100"
+                      onClick={() => handleQuickAction({ ...action, price: 0, category: action.name.split(' ')[1] || 'Layanan' })}
+                      className="group flex flex-col items-center justify-center p-4 bg-white rounded-2xl border-2 indigo-500 hover:border-amber-500 hover:bg-grey-500/50 hover:shadow-xl transition-all active:scale-95"
                     >
-                      <div className={`${action.color} text-white p-2 md:p-3 rounded-xl mb-2 shadow-lg group-hover:scale-110 transition-transform`}>
-                        <Icon name={action.icon} className="text-xl md:text-2xl" />
+                      <div className={`${action.color} text-white p-3 rounded-2xl mb-2 shadow-lg shadow-gray-200 group-hover:scale-110 transition-transform`}>
+                        <Icon name={action.icon} className="text-2xl" />
                       </div>
-                      <span className="text-[10px] md:text-xs font-bold text-slate-600 uppercase text-center leading-tight">
-                        {action.name}
-                      </span>
+                      <span className="text-[10px] font-black text-slate-600 uppercase tracking-tight text-center">{action.name}</span>
                     </button>
                   ))}
                 </div>
@@ -701,62 +680,64 @@
 
             {/* Tambahkan padding bottom ekstra (pb-24) di HP agar tidak tertutup tombol melayang */}
             <div className="flex-1 overflow-y-auto px-4 md:px-6 pb-24 md:pb-6">
-                {/* DAFTAR PRODUK - 2 Kolom di HP, 4-5 di Desktop */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-32">
-                  {filteredProducts.map(product => (
-                    <div 
-                      key={product.id} 
-                      onClick={() => addToCart(product)} 
-                      className="bg-white p-3 rounded-2xl shadow-sm border border-slate-50 hover:border-indigo-200 transition-all active:scale-95 flex flex-col"
-                    >
-                      <div className="aspect-square bg-slate-50 rounded-xl mb-2 flex items-center justify-center overflow-hidden">
-                        {product.image ? (
-                          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <Icon name="inventory_2" className="text-slate-200 text-3xl" />
-                        )}
-                      </div>
-                      <h4 className="font-bold text-[11px] md:text-xs uppercase text-slate-700 line-clamp-2 h-8 mb-1">
-                        {product.name}
-                      </h4>
-                      <div className="flex justify-between items-center mt-auto">
-                        <p className="text-indigo-600 font-black text-xs">
-                          {product.price === 0 ? "Manual" : formatRp(product.price)}
-                        </p>
-                        <span className="text-[9px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded-md">
-                          {product.stock}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+              {/* DAFTAR PRODUK - Ukuran diperkecil */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-24">
+                    {filteredProducts.map(product => (
+                        <div 
+                            key={product.id} 
+                            onClick={() => addToCart(product)} 
+                            className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 hover:border-indigo-400 cursor-pointer transition-all active:scale-95 flex flex-col h-full"
+                        >
+                            {/* Box Ikon/Gambar diperkecil h-20 */}
+                            <div className="h-20 bg-slate-50 rounded-xl mb-2 flex items-center justify-center overflow-hidden">
+                                {product.image ? (
+                                    <img 
+                                        src={product.image} 
+                                        alt={product.name} 
+                                        className="w-full h-full object-cover shadow-inner"
+                                        onError={(e) => { e.target.src = 'https://via.placeholder.com/150?text=No+Image'; }} // Jika link mati
+                                    />
+                                ) : (
+                                    <Icon name="inventory_2" className="text-slate-200 text-2xl" />
+                                )}
+                            </div>
+                            
+                            {/* Teks diperkecil pakai text-[11px] */}
+                            <h4 className="font-bold text-[11px] uppercase text-slate-700 line-clamp-1 mb-1">
+                                {product.name}
+                            </h4>
+                            
+                            <div className="flex justify-between items-end mt-auto">
+                                <p className="text-indigo-600 font-black text-xs">
+                                    {product.price === 0 ? "Nominal" : formatRp(product.price)}
+                                </p>
+                                <span className="text-[9px] text-slate-300 font-bold">
+                                    Stok: {product.stock}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
           </div>
 
-            {/* TOMBOL MELAYANG KHUSUS HP (Tampil jika keranjang tidak sedang dibuka) */}
-            {!isMobileCartOpen && (
-                <div className="md:hidden fixed bottom-4 left-4 right-4 z-30">
+            {/* TOMBOL PESANAN BULAT (FAB) - Angka 5 */}
+            {!isMobileCartOpen && cart.length > 0 && (
+              <div className="md:hidden fixed bottom-6 right-6 z-40">
                 <button
-                    onClick={() => setIsMobileCartOpen(true)}
-                    className="w-full bg-indigo-600 text-white rounded-2xl shadow-xl p-4 flex justify-between items-center font-bold active:scale-95 transition-transform"
+                  onClick={() => setIsMobileCartOpen(true)}
+                  className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center relative active:scale-90 transition-transform"
                 >
-                    <div className="flex items-center gap-2">
-                    <div className="bg-white/20 p-2 rounded-lg relative">
-                        <Icon name="shopping_cart" />
-                        {cart.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                            {cart.length}
-                        </span>
-                        )}
-                    </div>
-                    <span>Lihat Pesanan</span>
-                    </div>
-                    <span>{formatRp(totalBelanja)}</span>
+                  <Icon name="shopping_cart" className="text-2xl" />
+                  {/* Badge Jumlah Item */}
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
+                    {cart.reduce((sum, item) => sum + item.qty, 0)}
+                  </span>
                 </button>
-                </div>
+              </div>
             )}
 
-          {/* PANEL KERANJANG - Modal di HP, atau Sidebar penuh di Desktop */}
+            {/* PANEL KERANJANG - Modal di HP, atau Sidebar penuh di Desktop */}
             <div className={`${isMobileCartOpen ? 'fixed inset-0 z-40 flex flex-col bg-white' : 'hidden md:flex md:w-[400px] bg-white shadow-xl flex-col no-print border-l border-gray-200 z-20 relative h-full'}`}>
                 
                 {/* Header Keranjang untuk Mobile (Memiliki tombol close) */}
